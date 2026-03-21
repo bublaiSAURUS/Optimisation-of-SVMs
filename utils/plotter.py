@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def plot(svm, X, y, filename="plot.png"):
+def plot_demo(svm, X, y, filename="plot.png"):
     K = X @ X.T
     history = np.array(getattr(svm, "alpha_history", []))
     
@@ -65,3 +65,104 @@ def plot(svm, X, y, filename="plot.png"):
         fig2.tight_layout()
         fig2.savefig("q_convergence.png", dpi=150)
         plt.close(fig2)
+
+
+def plot_obj_func(obj_history):
+    plt.plot(obj_history)
+    plt.title(r"$Q(\alpha)$ vs iterations")
+    plt.xlabel("Iteration")
+    plt.ylabel(r"Q(\alpha)")
+    plt.show()
+
+def plot_errors(obj_history):
+    Q_star = obj_history[-1]
+    q_errors = [abs(q - Q_star) for q in obj_history]
+    plt.plot(np.log10(q_errors))
+    plt.title("Q-linear convergence")
+    plt.xlabel("Iteration")
+    plt.ylabel(r"$\log_10 |Q(\alpha_k) - Q(\alpha*)|$")
+    plt.savefig("log-errors.png")
+    plt.show()
+
+
+def plot_Q_conv(alpha_history):
+    alpha_star = alpha_history[-1]
+    ratios = []
+    for i in range(len(alpha_history) - 1):
+            num = np.linalg.norm(alpha_history[i + 1] - alpha_star)
+            den = np.linalg.norm(alpha_history[i] - alpha_star)
+            if den > 0:
+                ratios.append(num / den)
+
+    plt.plot(ratios)
+    plt.title("Q-linear convergence")
+    plt.xlabel("Iteration")
+    plt.ylabel(r'$|x_{k+1}-x^*| / |x_k-x^*|$')
+    plt.savefig("q_conv.png")
+    plt.show()
+
+def plot_timecomplexity():
+    pass
+
+def plot_spacecomplexity():
+    pass
+
+def plot_boundary(X, y, svm, tol=1e-8):
+    plt.figure(figsize=(8, 6))
+
+    # ---------------------------
+    # 1. Plot data points
+    # ---------------------------
+    plt.scatter(X[y == 1][:, 0], X[y == 1][:, 1], label="Class +1")
+    plt.scatter(X[y == -1][:, 0], X[y == -1][:, 1], label="Class -1")
+
+    # ---------------------------
+    # 2. Highlight support vectors
+    # ---------------------------
+    alphas = svm.alpha_history[-1]
+    sv = alphas > tol
+
+    plt.scatter(
+        X[sv][:, 0],
+        X[sv][:, 1],
+        s=100,
+        facecolors='none',
+        edgecolors='k',
+        label="Support Vectors"
+    )
+
+    # ---------------------------
+    # 3. Create grid
+    # ---------------------------
+    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+
+    xx, yy = np.meshgrid(
+        np.linspace(x_min, x_max, 200),
+        np.linspace(y_min, y_max, 200)
+    )
+
+    grid = np.c_[xx.ravel(), yy.ravel()]
+
+    # ---------------------------
+    # 4. Compute decision function
+    # ---------------------------
+    Z = np.array([svm.predict(point) for point in grid])
+    Z = Z.reshape(xx.shape)
+
+    # ---------------------------
+    # 5. Plot decision boundary and margins
+    # ---------------------------
+    plt.contour(xx, yy, Z, levels=[0], linewidths=2)        # decision boundary
+    plt.contour(xx, yy, Z, levels=[-1, 1], linestyles='--') # margins
+
+    # ---------------------------
+    # 6. Labels and display
+    # ---------------------------
+    plt.title("SVM Decision Boundary")
+    plt.legend()
+    plt.xlabel("x1")
+    plt.ylabel("x2")
+    plt.show()
+
+

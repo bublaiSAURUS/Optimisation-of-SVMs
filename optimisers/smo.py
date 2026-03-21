@@ -21,14 +21,32 @@ class SMO:
         # for linear kernel
         self.w = np.zeros(self.n) 
 
+        # for experiments
+        self.obj_history = []
+
     def predict(self, x):
-        result = np.matmul((self.alphas * self._target) , self.kernel(self._point, x)) - self.b
+        result = np.matmul((self.alphas * self._target) , self.kernel(self._point, x)) + self.b
         return result
 
     def get_error(self, i):
         return self.predict(self._point[i,:]) - self._target[i]
-        
 
+
+    def compute_objective(self):
+        # obj = 0.0
+        obj_term = 0.0
+        ay = self.alphas * self._target
+        # for i in range(self.m):
+        #     for j in range(self.m):
+        #         obj += 0.5 * self.alphas[i] * self.alphas[j] * \
+        #             self._target[i] * self._target[j] * \
+        #             self.kernel(self._point[i], self._point[j])
+        # obj -= np.sum(self.alphas)    
+        # return obj  
+        for i in range(self.m):
+            ki = self.kernel(self._point[i], self._point)
+            obj_term += ay[i] * np.dot(ki, ay)
+        return 0.5 * obj_term - np.sum(self.alphas)
 
     def takeStep(self, i1, i2):
         if (i1 == i2):
@@ -89,8 +107,8 @@ class SMO:
         b_old = self.b
         
         # Update threshold
-        b1 = E1 + y1*(a1 - alph1)*k11 + y2*(a2 - alph2)*k12 + b_old
-        b2 = E2 + y1*(a1 - alph1)*k12 + y2*(a2 - alph2)*k22 + b_old
+        b1 = self.b - (E1 + y1*(a1 - alph1)*k11 + y2*(a2 - alph2)*k12)
+        b2 = self.b - (E2 + y1*(a1 - alph1)*k12 + y2*(a2 - alph2)*k22) 
         if 0 < a1 < self.C:
             self.b = b1
         elif 0 < a2 < self.C:
@@ -99,7 +117,7 @@ class SMO:
             self.b = np.mean([b1, b2])
 
 
-        if self.kernel == "linear":
+        if self.kernel.__name__ == "linear_kernel":
             self.w += y1 * (a1 - alph1) * x1 + y2 * (a2 - alph2) * x2 
 
 
@@ -108,8 +126,8 @@ class SMO:
         for i in range(self.m):
             self.error_cache[i] += (
                 y1 * (a1 - alph1) * self.kernel(self._point[i1], self._point[i]) +
-                y2 * (a2 - alph2) * self.kernel(self._point[i2], self._point[i]) -
-                self.b + b_old
+                y2 * (a2 - alph2) * self.kernel(self._point[i2], self._point[i]) +
+                (self.b - b_old)
             )
 
 
@@ -118,7 +136,7 @@ class SMO:
         self.alpha_history.append(self.alphas.copy())
 
         return 1
-
+    
 
     def examineExample(self, i2):
         y2 = self._target[i2]
@@ -147,7 +165,7 @@ class SMO:
                     return 1
 
         return 0
-    
+
     def fit(self):
         for i in range(self.m):
             self.error_cache[i] = self.get_error(i)
@@ -168,4 +186,4 @@ class SMO:
             elif numChanged == 0:
                 examineAll = 1
         return self.alphas, self.b
-      
+        
