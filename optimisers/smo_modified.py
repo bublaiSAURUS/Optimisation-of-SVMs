@@ -1,7 +1,7 @@
 import numpy as np
 
 class SMO_MOD:
-    def __init__(self, X, y, C=1, kernel = None, max_iter = 200, tol = 1e-6, eps = 1e-8):
+    def __init__(self, X, y, C=1, kernel = None, max_iter = 200, tol = 1e-3, eps = 1e-6):
         self._point = X
         self._target = y
         self.m, self.n = np.shape(self._point)
@@ -14,10 +14,25 @@ class SMO_MOD:
         self.w = np.zeros(self.n)
         self.max_iter = max_iter
         self.iter = 0
+        #for plots:
+        self.obj_history = []
+        self.alpha_history = [self.alphas.copy()]
 
     def predict(self, x, b):
         result = np.matmul((self.alphas * self._target) , self.kernel(self._point, x)) + b
         return result
+    
+    def get_error(self, i):
+        return self.predict(self._point[i,:]) - self._target[i]
+
+
+    def compute_objective(self):
+        obj_term = 0.0
+        ay = self.alphas * self._target
+        for i in range(self.m):
+            ki = self.kernel(self._point[i], self._point)
+            obj_term += ay[i] * np.dot(ki, ay)
+        return 0.5 * obj_term - np.sum(self.alphas)
 
 
     def compute_F(self, i2):
@@ -65,8 +80,8 @@ class SMO_MOD:
         else:
             a1_L = alph1 + s*(alph2 - L)
             a1_H = alph1 + s*(alph2 - H)
-            Lobj = -(a1_L + L) + 0.5 * (k11 * a1_L**2 + k22 * L**2 + 2 * s * k12 * a1_L * L)
-            Hobj = -(a1_H + H) + 0.5 * (k11 * a1_H**2 + k22 * H**2 + 2 * s * k12 * a1_H * H)
+            Lobj = (a1_L + L) - 0.5 * (k11 * a1_L**2 + k22 * L**2 + 2 * s * k12 * a1_L * L)
+            Hobj = (a1_H + H) - 0.5 * (k11 * a1_H**2 + k22 * H**2 + 2 * s * k12 * a1_H * H)
             if (Lobj > Hobj + self.eps):
                 a2 = L
             elif (Lobj < Hobj  - self.eps):
@@ -93,6 +108,9 @@ class SMO_MOD:
 
         self.alphas[i1] = a1
         self.alphas[i2] = a2
+        self.alpha_history.append(self.alphas.copy())
+
+        self.obj_history.append(self.compute_objective())
         
         #TODO: Update I_0, I_1, I_2, I_3, I_4 (Not needed as I am manually checking)
 
@@ -101,7 +119,7 @@ class SMO_MOD:
 
         #TODO: Compute (i_low, b_low) and (i_up, b_up) using eqns (11a) and (11b) and 3. from sec. 5
         for i in range(self.m):
-            if ((0 < self.alphas[i] and self.alphas[i] < self._C) or i == i1 or i == i2):
+            if ((0 < self.alphas[i] and self.alphas[i] < self._C) or (i == i1) or (i == i2)):
                 if self.fcache[i] > self.b_low:
                     self.b_low = self.fcache[i]
                     self.i_low = i
@@ -130,12 +148,12 @@ class SMO_MOD:
 
             self.fcache[i2] = F2
             # if (((i2 in I_1) or (i2 in I2)) and (F2 < self.b_up)):
-            if ((self._target[i2] == 1 and self.alphas[i2] == 0) or (self._target[i2] == -1 and self.alphas[i2] == self._C) and (F2 < self.b_up)):
+            if (((self._target[i2] == 1 and self.alphas[i2] == 0) or (self._target[i2] == -1 and self.alphas[i2] == self._C)) and (F2 < self.b_up)):
                 self.b_up = F2
                 self.i_up = i2
             
             # elif (((i2 in I_3) or (i2 in I_4)) and (F2 > self.b_low)):
-            elif ((self._target[i2] == 1 and self.alphas[i2] == self._C) or (self._target[i2] == -1 and self.alphas[i2] == 0) and (F2 > self.b_low)):    
+            elif (((self._target[i2] == 1 and self.alphas[i2] == self._C) or (self._target[i2] == -1 and self.alphas[i2] == 0)) and (F2 > self.b_low)):    
                 self.b_low = F2
                 self.i_low = i2
         
@@ -180,14 +198,11 @@ class SMO_MOD:
         
         self.fcache[self.i_low] = 1
         self.fcache[self.i_up] = -1
-
-        counter = 0
         numChanged = 0
         examineAll = 1
         while ((numChanged > 0 or examineAll) and self.iter < self.max_iter):
             numChanged = 0
             self.iter += 1
-            print(self.iter)
             if examineAll:
                 for i in range(self.m):
                     numChanged += self.examineExample(i)
@@ -204,9 +219,16 @@ class SMO_MOD:
                     numChanged += inner_loop_success
                 
                 numChanged = 0
+
+                # for i in range(self.m):
+                #     if(0 < self.alphas[i] and self.alphas[i] < self._C):
+                #         numChanged += self.examineExample(i)
+                #     if(self.b_up > self.b_low - 2*self.tol):
+                #         break
             
             if examineAll == 1:
                 examineAll = 0
             elif numChanged == 0:
                 examineAll = 1
+        
         return self.alphas

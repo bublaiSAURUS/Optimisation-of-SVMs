@@ -4,7 +4,7 @@ from examples import demo, fetchdata
 from utils import plotter
 
 class SVM:
-    def __init__(self, kernel = 'linear', C = 1.0, max_iter = 200, tol = 1e-5, sv_tol = 1e-8):
+    def __init__(self, kernel = 'linear', C = 1.0, max_iter = 200, tol = 1e-3, sv_tol = 1e-8):
         if kernel == 'linear':
             self._kernel = self.linear_kernel
         elif kernel  =='polynomial':
@@ -44,12 +44,16 @@ class SVM:
         # plotter.plot_obj_func(self.solver.obj_history)
         # plotter.plot_Q_conv(self.alpha_history)
         # plotter.plot_errors(self.solver.obj_history)
-        plotter.plot_boundary(X, y, self.solver)
+        # plotter.plot_boundary(X, y, self.solver)
 
     def fit_modified(self, X, y):
         self.solver = smo_modified.SMO_MOD(X, y, C=1, kernel = self._kernel, tol = self._tol)
         self.alphas = self.solver.fit()
+        # plotter.plot_obj_func(self.solver.obj_history)
+        # plotter.plot_errors(self.solver.obj_history)
+        # plotter.plot_Q_conv(self.solver.alpha_history, p = 1)
         plotter.plot_boundary(X, y, self.solver)
+
 
 
     def predict(self, X):
@@ -62,7 +66,7 @@ if  __name__ == "__main__":
     svm = SVM(kernel = "linear")
     # X, y = demo.create_demo()
     # X, y = fetchdata.get_data()
-    X, y = fetchdata.make_toydata(n_samples = 100)
+    X, y = fetchdata.make_toydata(n_samples = 1000)
     svm.fit_modified(X, y)
     # print(svm.alpha_history)
     # plotter.plot_demo(svm, X, y, filename = "demo.png")

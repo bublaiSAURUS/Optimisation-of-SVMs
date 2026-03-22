@@ -72,32 +72,33 @@ def plot_obj_func(obj_history):
     plt.title(r"$Q(\alpha)$ vs iterations")
     plt.xlabel("Iteration")
     plt.ylabel(r"Q(\alpha)")
+    plt.savefig("obj_func_history.png")
     plt.show()
 
 def plot_errors(obj_history):
     Q_star = obj_history[-1]
     q_errors = [abs(q - Q_star) for q in obj_history]
     plt.plot(np.log10(q_errors))
-    plt.title("Q-linear convergence")
+    plt.title("Log errors vs iterations")
     plt.xlabel("Iteration")
     plt.ylabel(r"$\log_10 |Q(\alpha_k) - Q(\alpha*)|$")
     plt.savefig("log-errors.png")
     plt.show()
 
 
-def plot_Q_conv(alpha_history):
+def plot_Q_conv(alpha_history, p = 1):
     alpha_star = alpha_history[-1]
     ratios = []
     for i in range(len(alpha_history) - 1):
             num = np.linalg.norm(alpha_history[i + 1] - alpha_star)
-            den = np.linalg.norm(alpha_history[i] - alpha_star)
+            den = np.linalg.norm(alpha_history[i] - alpha_star)**p
             if den > 0:
                 ratios.append(num / den)
 
     plt.plot(ratios)
-    plt.title("Q-linear convergence")
+    plt.title(f"Q-linear convergence (p = {p})")
     plt.xlabel("Iteration")
-    plt.ylabel(r'$|x_{k+1}-x^*| / |x_k-x^*|$')
+    plt.ylabel(r'$|x_{k+1}-x^*| / |x_k-x^*|^p$')
     plt.savefig("q_conv.png")
     plt.show()
 

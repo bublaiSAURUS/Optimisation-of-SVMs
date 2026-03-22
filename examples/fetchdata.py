@@ -9,6 +9,6 @@ def get_data():
     return X, y
 
 def make_toydata(n_samples):
-    X, y = make_blobs(n_samples=500, centers=2, cluster_std=2.5, n_features=2, random_state=42)
+    X, y = make_blobs(n_samples= n_samples, centers=2, cluster_std= 3.0, n_features=2, random_state=42)
     y = np.where(y == 0, -1, 1).astype(float)
     return X, y
