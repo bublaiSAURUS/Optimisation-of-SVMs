@@ -107,7 +107,7 @@ def plot_timecomplexity():
 def plot_spacecomplexity():
     pass
 
-def plot_boundary(X, y, svm, tol=1e-8):
+def plot_boundary(X, y, solver, tol=1e-8):
     plt.figure(figsize=(8, 6))
 
     # ---------------------------
@@ -119,8 +119,19 @@ def plot_boundary(X, y, svm, tol=1e-8):
     # ---------------------------
     # 2. Highlight support vectors
     # ---------------------------
-    alphas = svm.alpha_history[-1]
+    alphas = solver.alphas
+    # print(alphas)
     sv = alphas > tol
+
+    sv_indices = np.where(alphas > tol)[0]
+    X_sv = solver._point[sv_indices]
+    y_sv = solver._target[sv_indices]
+    alpha_sv = alphas[sv_indices]
+    K = solver.kernel(solver._point, X_sv)
+    u = np.dot(K, (y_sv * alpha_sv))
+    bias_list = solver._target - u
+    bias = np.mean(bias_list)
+
 
     plt.scatter(
         X[sv][:, 0],
@@ -147,7 +158,7 @@ def plot_boundary(X, y, svm, tol=1e-8):
     # ---------------------------
     # 4. Compute decision function
     # ---------------------------
-    Z = np.array([svm.predict(point) for point in grid])
+    Z = np.array([solver.predict(point, bias) for point in grid])
     Z = Z.reshape(xx.shape)
 
     # ---------------------------

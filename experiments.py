@@ -1,5 +1,5 @@
 import numpy as np
-from optimisers import smo
+from optimisers import smo, smo_modified
 from examples import demo, fetchdata
 from utils import plotter
 
@@ -46,6 +46,11 @@ class SVM:
         # plotter.plot_errors(self.solver.obj_history)
         plotter.plot_boundary(X, y, self.solver)
 
+    def fit_modified(self, X, y):
+        self.solver = smo_modified.SMO_MOD(X, y, C=1, kernel = self._kernel, tol = self._tol)
+        self.alphas = self.solver.fit()
+        plotter.plot_boundary(X, y, self.solver)
+
 
     def predict(self, X):
         kernel_support_vectors = self.compute_kernel_support_vectors(X)
@@ -58,7 +63,7 @@ if  __name__ == "__main__":
     # X, y = demo.create_demo()
     # X, y = fetchdata.get_data()
     X, y = fetchdata.make_toydata(n_samples = 100)
-    svm.fit(X, y)
+    svm.fit_modified(X, y)
     # print(svm.alpha_history)
     # plotter.plot_demo(svm, X, y, filename = "demo.png")
 
