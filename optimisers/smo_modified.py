@@ -14,7 +14,8 @@ class SMO_MOD:
         self.w = np.zeros(self.n)
         self.max_iter = max_iter
         self.iter = 0
-        #for plots:
+        
+        # for plots:
         self.obj_history = []
         self.alpha_history = [self.alphas.copy()]
 
@@ -98,7 +99,7 @@ class SMO_MOD:
             self.w += y1 * (a1 - alph1) * x1 + y2 * (a2 - alph2) * x2
 
 
-        #TODO: Update fcache[i] for i in I_0 using new Lagrange Multipliers
+        # Update fcache[i] for i in I_0 using new Lagrange Multipliers
         # Manually doing this:
         del_alph1 = a1 - alph1
         del_alph2 = a2 - alph2
@@ -112,12 +113,12 @@ class SMO_MOD:
 
         self.obj_history.append(self.compute_objective())
         
-        #TODO: Update I_0, I_1, I_2, I_3, I_4 (Not needed as I am manually checking)
+        # Update I_0, I_1, I_2, I_3, I_4 (Not needed as I am manually checking)
 
         self.fcache[i1] = F1 + y1 * (a1 - alph1)*k11 + y2 * (a2 - alph2)*k12
         self.fcache[i2] = F2 + y1 * (a1 - alph1)*k12 + y2 * (a2 - alph2)*k22
 
-        #TODO: Compute (i_low, b_low) and (i_up, b_up) using eqns (11a) and (11b) and 3. from sec. 5
+        # Compute (i_low, b_low) and (i_up, b_up) using eqns (11a) and (11b) and 3. from sec. 5
         for i in range(self.m):
             if ((0 < self.alphas[i] and self.alphas[i] < self._C) or (i == i1) or (i == i2)):
                 if self.fcache[i] > self.b_low:
@@ -143,7 +144,7 @@ class SMO_MOD:
             F2 = self.fcache[i2]
         else:
             
-            #TODO: Compute F2 = F_i2
+            # Compute F2 = F_i2
             F2 = self.compute_F(i2)
 
             self.fcache[i2] = F2
@@ -188,12 +189,12 @@ class SMO_MOD:
     def fit(self):
         self.b_up = -1
         
-        #TODO: initialise i_up = any one index of class 1
+        # initialise i_up = any one index of class 1
         self.i_up = np.where(self._target == 1)[0][0]
                 
         self.b_low = 1
         
-        #TODO: initialise i_low = any one index of class 2  
+        # initialise i_low = any one index of class 2  
         self.i_low = np.where(self._target == -1)[0][0]
         
         self.fcache[self.i_low] = 1
@@ -219,12 +220,6 @@ class SMO_MOD:
                     numChanged += inner_loop_success
                 
                 numChanged = 0
-
-                # for i in range(self.m):
-                #     if(0 < self.alphas[i] and self.alphas[i] < self._C):
-                #         numChanged += self.examineExample(i)
-                #     if(self.b_up > self.b_low - 2*self.tol):
-                #         break
             
             if examineAll == 1:
                 examineAll = 0

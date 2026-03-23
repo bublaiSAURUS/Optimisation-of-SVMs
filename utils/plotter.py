@@ -71,7 +71,7 @@ def plot_obj_func(obj_history):
     plt.plot(obj_history)
     plt.title(r"$Q(\alpha)$ vs iterations")
     plt.xlabel("Iteration")
-    plt.ylabel(r"Q(\alpha)")
+    plt.ylabel(r"$Q(\alpha)$")
     plt.savefig("obj_func_history.png")
     plt.show()
 
@@ -108,73 +108,27 @@ def plot_timecomplexity():
 def plot_spacecomplexity():
     pass
 
-def plot_boundary(X, y, solver, tol=1e-8):
-    plt.figure(figsize=(8, 6))
+def plot_moons_boundary(X, y, solver):
+    plt.figure(figsize=(10, 8))
 
-    # ---------------------------
-    # 1. Plot data points
-    # ---------------------------
-    plt.scatter(X[y == 1][:, 0], X[y == 1][:, 1], label="Class +1")
-    plt.scatter(X[y == -1][:, 0], X[y == -1][:, 1], label="Class -1")
+    bias = (solver.b_up + solver.b_low) / 2.0
 
-    # ---------------------------
-    # 2. Highlight support vectors
-    # ---------------------------
-    alphas = solver.alphas
-    # print(alphas)
-    sv = alphas > tol
-
-    sv_indices = np.where(alphas > tol)[0]
-    X_sv = solver._point[sv_indices]
-    y_sv = solver._target[sv_indices]
-    alpha_sv = alphas[sv_indices]
-    K = solver.kernel(solver._point, X_sv)
-    u = np.dot(K, (y_sv * alpha_sv))
-    bias_list = solver._target - u
-    bias = np.mean(bias_list)
-
-
-    plt.scatter(
-        X[sv][:, 0],
-        X[sv][:, 1],
-        s=100,
-        facecolors='none',
-        edgecolors='k',
-        label="Support Vectors"
-    )
-
-    # ---------------------------
-    # 3. Create grid
-    # ---------------------------
-    x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
-    y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
-
-    xx, yy = np.meshgrid(
-        np.linspace(x_min, x_max, 200),
-        np.linspace(y_min, y_max, 200)
-    )
-
+    x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
+    y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
+    xx, yy = np.meshgrid(np.linspace(x_min, x_max, 200),
+                         np.linspace(y_min, y_max, 200))
     grid = np.c_[xx.ravel(), yy.ravel()]
 
-    # ---------------------------
-    # 4. Compute decision function
-    # ---------------------------
     Z = np.array([solver.predict(point, bias) for point in grid])
     Z = Z.reshape(xx.shape)
 
-    # ---------------------------
-    # 5. Plot decision boundary and margins
-    # ---------------------------
-    plt.contour(xx, yy, Z, levels=[0], linewidths=2)        # decision boundary
-    plt.contour(xx, yy, Z, levels=[-1, 1], linestyles='--') # margins
+    plt.contourf(xx, yy, Z, levels=[-np.inf, 0, np.inf], alpha=0.2, colors=['blue', 'red'])
+    plt.contour(xx, yy, Z, levels=[0], colors='black', linewidths=2)
 
-    # ---------------------------
-    # 6. Labels and display
-    # ---------------------------
-    plt.title("SVM Decision Boundary")
+    plt.scatter(X[y == 1][:, 0], X[y == 1][:, 1], c='red', edgecolors='k', s=30, label='Class 1')
+    plt.scatter(X[y == -1][:, 0], X[y == -1][:, 1], c='blue', edgecolors='k', s=30, label='Class -1')
+
+    plt.title(f"SMO decision boundary (C={solver._C})")
     plt.legend()
-    plt.xlabel("x1")
-    plt.ylabel("x2")
+    plt.savefig("moons_boundary.png")
     plt.show()
-
-
