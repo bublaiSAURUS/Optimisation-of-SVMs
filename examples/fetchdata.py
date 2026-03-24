@@ -15,15 +15,16 @@ def get_data():
     y = np.where(y_raw == 1, 1.0, -1.0).astype(float)
     return X_scaled, y
 
-def make_toydata(n_samples):
+def make_toydata(n_samples, make_plot = False):
     X, y = make_moons(n_samples= n_samples, noise=0.3, random_state=42)
     y = np.where(y == 0, -1, 1).astype(float)
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
-    plt.title("Moons dataset")
-    plt.scatter(X_scaled[y == 1, 0], X_scaled[y == 1, 1], color='red', label='Class 1')
-    plt.scatter(X_scaled[y == -1, 0], X_scaled[y == -1, 1], color='blue', label='Class -1')
-    plt.legend()
-    plt.savefig("dataset.png")
-    plt.close()
+    if make_plot:
+        plt.title("Moons dataset")
+        plt.scatter(X_scaled[y == 1, 0], X_scaled[y == 1, 1], color='red', label='Class 1')
+        plt.scatter(X_scaled[y == -1, 0], X_scaled[y == -1, 1], color='blue', label='Class -1')
+        plt.legend()
+        plt.savefig("dataset.png")
+        plt.close()
     return X_scaled, y

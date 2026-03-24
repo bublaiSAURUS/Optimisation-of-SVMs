@@ -102,11 +102,36 @@ def plot_Q_conv(alpha_history, p = 1):
     plt.savefig("q_conv.png")
     plt.show()
 
-def plot_timecomplexity():
-    pass
+def plot_timecomplexity(n_sample_list, time_elapsed):
+    n_samples = np.array(n_sample_list)
+    times = np.array(time_elapsed)
 
-def plot_spacecomplexity():
-    pass
+    coeffs = np.polyfit(np.log(n_samples), np.log(times), 1)
+    slope = coeffs[0]
+
+    plt.figure(figsize=(10, 6))
+    plt.loglog(n_samples, times, marker='o', linestyle='-', color='b', label='Measured Time')
+    
+    plt.title(f'Log-Log Empirical Time Complexity (Slope: {slope:.2f})')
+    plt.xlabel('number of samples (m)')
+    plt.ylabel('Time (T)')
+    plt.grid(True, which="both", ls="-", alpha=0.5)
+    plt.legend()
+    plt.savefig("emp_time_complexity.png")
+    plt.show()
+
+def plot_spacecomplexity(n_sample_list, memory_usage):
+    n_samples = np.array(n_sample_list)
+    mem = np.array(memory_usage)
+    plt.figure(figsize=(10, 6))
+    plt.plot(n_samples, mem, marker='s', linestyle='-', color='r', label='Memory')
+    plt.title(f'Empirical Space Complexity')
+    plt.xlabel('number of samples (m)')
+    plt.ylabel('Memory (MB)')
+    plt.grid(True, which="both", ls="-", alpha=0.5)
+    plt.legend()
+    plt.savefig("emp_memory_complexity.png")
+    plt.show()
 
 def plot_moons_boundary(X, y, solver):
     plt.figure(figsize=(10, 8))
