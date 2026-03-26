@@ -75,13 +75,18 @@ def plot_obj_func(obj_history):
     plt.savefig("obj_func_history.png")
     plt.show()
 
-def plot_errors(obj_history):
+def plot_errors(obj_history, p = 1):
     Q_star = obj_history[-1]
-    q_errors = [abs(q - Q_star) for q in obj_history]
-    plt.plot(np.log10(q_errors))
-    plt.title("Log errors vs iterations")
+    ratios = []
+    for i in range(len(obj_history) - 1):
+        num = np.abs(obj_history[i + 1] - Q_star)
+        den = np.abs(obj_history[i] - Q_star)**p
+        if den > 0:
+            ratios.append(num / den)
+    plt.plot(ratios)
+    plt.title(r"Q-convergence of $Q(\alpha)$")
     plt.xlabel("Iteration")
-    plt.ylabel(r"$\log_10 |Q(\alpha_k) - Q(\alpha*)|$")
+    plt.ylabel(r"$|Q(\alpha_{k+1}) - Q(\alpha*)| / |Q(\alpha_{k}) - Q(\alpha*)|^p$")
     plt.savefig("log-errors.png")
     plt.show()
 
