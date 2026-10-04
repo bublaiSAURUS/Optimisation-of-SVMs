@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smo-svm"
+version = "0.1.0"
+description = "Research implementations of Platt and Keerthi SMO for binary SVMs"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24"]
+keywords = ["svm", "smo", "optimization", "machine-learning"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.optional-dependencies]
+plot = ["matplotlib>=3.7"]
+dev = ["build>=1.2", "pytest>=8.0", "ruff>=0.6"]
+
+[project.urls]
+"Platt paper" = "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-98-14.pdf"
+"Keerthi paper" = "https://doi.org/10.1162/089976601300014493"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
